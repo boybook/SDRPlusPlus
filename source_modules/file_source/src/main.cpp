@@ -92,7 +92,7 @@ private:
         if (_this->running) { return; }
         if (_this->reader == NULL) { return; }
         _this->running = true;
-        _this->workerThread = _this->float32Mode ? std::thread(floatWorker, _this) : std::thread(worker, _this);
+        _this->workerThread = _this->float32Mode ? std::thread(floatWorker, _this) : (_this->int32Mode ? std::thread(int32Worker, _this) : std::thread(worker, _this));
         flog::info("FileSourceModule '{0}': Start!", _this->name);
     }
 
@@ -149,6 +149,7 @@ private:
         }
 
         ImGui::Checkbox("Float32 Mode##_file_source", &_this->float32Mode);
+        ImGui::Checkbox("Int32 Mode##_file_source", &_this->int32Mode);
     }
 
     static void worker(void* ctx) {
@@ -160,6 +161,21 @@ private:
         while (true) {
             _this->reader->readSamples(inBuf, blockSize * 2 * sizeof(int16_t));
             volk_16i_s32f_convert_32f((float*)_this->stream.writeBuf, inBuf, 32768.0f, blockSize * 2);
+            if (!_this->stream.swap(blockSize)) { break; };
+        }
+
+        delete[] inBuf;
+    }
+
+    static void int32Worker(void* ctx) {
+        FileSourceModule* _this = (FileSourceModule*)ctx;
+        double sampleRate = std::max(_this->reader->getSampleRate(), (uint32_t)1);
+        int blockSize = std::min((int)(sampleRate / 200.0f), (int)STREAM_BUFFER_SIZE);
+        int32_t* inBuf = new int32_t[blockSize * 2];
+
+        while (true) {
+            _this->reader->readSamples(inBuf, blockSize * 2 * sizeof(int32_t));
+            volk_32i_s32f_convert_32f((float*)_this->stream.writeBuf, inBuf, 2147483648.0f, blockSize * 2);
             if (!_this->stream.swap(blockSize)) { break; };
         }
 
@@ -201,6 +217,7 @@ private:
 
     double centerFreq = 100000000;
 
+    bool int32Mode = false;
     bool float32Mode = false;
 };
 
