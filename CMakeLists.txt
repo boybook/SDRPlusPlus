@@ -53,6 +53,7 @@ option(OPT_BUILD_METEOR_DEMODULATOR "Build the meteor demodulator module (no dep
 option(OPT_BUILD_PAGER_DECODER "Build the pager decoder module (no dependencies required)" ON)
 option(OPT_BUILD_RADIO "Main audio modulation decoder (AM, FM, SSB, etc...)" ON)
 option(OPT_BUILD_RYFI_DECODER "RyFi data link decoder" OFF)
+option(OPT_BUILD_VHFVOICE_RADIO "VHF voice radio plugin (DMR, P25, NXDN demodulators and decoders) (Dependencies: itpp, mbe)" OFF)
 option(OPT_BUILD_VOR_RECEIVER "VOR beacon receiver" OFF)
 option(OPT_BUILD_WEATHER_SAT_DECODER "Build the HRPT decoder module (no dependencies required)" OFF)
 
@@ -297,6 +298,10 @@ endif (OPT_BUILD_VOR_RECEIVER)
 if (OPT_BUILD_WEATHER_SAT_DECODER)
 add_subdirectory("decoder_modules/weather_sat_decoder")
 endif (OPT_BUILD_WEATHER_SAT_DECODER)
+
+if (OPT_BUILD_VHFVOICE_RADIO)
+add_subdirectory("decoder_modules/vhfvoiceradio")
+endif (OPT_BUILD_VHFVOICE_RADIO)
 
 
 # Misc
